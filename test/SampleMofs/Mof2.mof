@@ -1,0 +1,250 @@
+/*
+@TargetNode='10.10.10.10'
+@GeneratedBy=AdeRfgWtrAdmin
+@GenerationDate=02/25/2021 17:44:23
+@GenerationHost=TestServer
+*/
+
+instance of MSFT_RoleResource as $MSFT_RoleResource1ref
+{
+ResourceID = "[WindowsFeature]ADDSInstall";
+ Ensure = "Present";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::203::9::WindowsFeature";
+ Name = "AD-Domain-Services";
+ ModuleName = "PSDesiredStateConfiguration";
+
+ModuleVersion = "1.1";
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_RoleResource as $MSFT_RoleResource2ref
+{
+ResourceID = "[WindowsFeature]RSAT-AD-AdminCenter";
+ Ensure = "Present";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::209::9::WindowsFeature";
+ Name = "RSAT-AD-AdminCenter";
+ ModuleName = "PSDesiredStateConfiguration";
+
+ModuleVersion = "1.1";
+
+DependsOn = {
+
+    "[WindowsFeature]ADDSInstall"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_RoleResource as $MSFT_RoleResource3ref
+{
+ResourceID = "[WindowsFeature]RSAT-ADDS-Tools";
+ Ensure = "Present";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::216::9::WindowsFeature";
+ Name = "RSAT-ADDS-Tools";
+ ModuleName = "PSDesiredStateConfiguration";
+
+ModuleVersion = "1.1";
+
+DependsOn = {
+
+    "[WindowsFeature]ADDSInstall"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_RoleResource as $MSFT_RoleResource4ref
+{
+ResourceID = "[WindowsFeature]RSAT-DNS-Server";
+ Ensure = "Present";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::223::9::WindowsFeature";
+ Name = "RSAT-DNS-Server";
+ ModuleName = "PSDesiredStateConfiguration";
+
+ModuleVersion = "1.1";
+
+DependsOn = {
+
+    "[WindowsFeature]ADDSInstall"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_Credential as $MSFT_Credential1ref
+{
+Password = "01000000d08c9ddf0115d1118c7a00c04fc297eb010000007e0f6ffe03cfcb46bca72ac5e606a1c10000000002000000000003660000c000000010000000af19d176f15c8c6f75da6bd04a18f3ae0000000004800000a000000010000000de39d119edc8d7f2a4110db0555df062380000002f9d0e8f0fd0feada9e82d85d16449c5f97bb4b959d67cb9fd2106e0834177026bfc3f19f647176d905f682b51b22a9c5de9328984a2e4d91400000014486bf3adce68ba6274cd415c00e3f1e7246be8";
+ UserName = "App\\AdeRfgWtrAdmin";
+
+};
+
+instance of MSFT_Credential as $MSFT_Credential2ref
+{
+Password = "01000000d08c9ddf0115d1118c7a00c04fc297eb010000007e0f6ffe03cfcb46bca72ac5e606a1c10000000002000000000003660000c000000010000000af19d176f15c8c6f75da6bd04a18f3ae0000000004800000a000000010000000de39d119edc8d7f2a4110db0555df062380000002f9d0e8f0fd0feada9e82d85d16449c5f97bb4b959d67cb9fd2106e0834177026bfc3f19f647176d905f682b51b22a9c5de9328984a2e4d91400000014486bf3adce68ba6274cd415c00e3f1e7246be8";
+ UserName = "App\\Administrator";
+
+};
+
+instance of MSFT_xADDomain as $MSFT_xADDomain1ref
+{
+ResourceID = "[xADDomain]target";
+ SysvolPath = "C:\\Windows\\Sysvol";
+ LogPath = "C:\\Windows\\NTDS";
+ DomainNetbiosName = "target";
+ DomainAdministratorCredential = $MSFT_Credential1ref;
+ SafemodeAdministratorPassword = $MSFT_Credential2ref;
+ DatabasePath = "C:\\Windows\\NTDS";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::232::13::xADDomain";
+ DomainName = "target.domain";
+ ModuleName = "xActiveDirectory";
+ ModuleVersion = "2.22.0.0";
+
+DependsOn = {
+
+    "[WindowsFeature]ADDSInstall"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource1ref
+{
+ResourceID = "[Script]DefaultTemplates";
+ GetScript = "\n                    $configurationNamingContext = (Get-ADRootDSE).configurationNamingContext\n                    $identity = \"CN=Certificate Templates,CN=Public Key Services,CN=Services,$configurationNamingContext\"\n                    [array]$certDump = Get-ADObject -Filter * -Properties DisplayName -SearchBase $identity\n                    return @{\n                        Result = $certDump.Count-1\n                    }\n                ";
+ TestScript = "\n                    $configurationNamingContext = (Get-ADRootDSE).configurationNamingContext\n                    $identity = \"CN=Certificate Templates,CN=Public Key Services,CN=Services,$configurationNamingContext\"\n                    [array]$certDump = Get-ADObject -Filter * -Properties DisplayName -SearchBase $identity\n                    return ($certDump.count -gt 30)\n                ";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::271::13::Script";
+ SetScript = "\n                    $certutilDump = [scriptblock]::Create(\". $env:SystemRoot\\system32\\certutil.exe -installdefaulttemplates\")\n                    $null = Invoke-Command -ScriptBlock $certutilDump\n                ";
+ ModuleName = "PSDesiredStateConfiguration";
+
+ModuleVersion = "1.1";
+
+DependsOn = {
+
+    "[xADDomain]target"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_xDnsServerSecondaryZone as $MSFT_xDnsServerSecondaryZone1ref
+{
+ResourceID = "[xDnsServerSecondaryZone]AdeRfgWtr.local";
+ MasterServers = {
+    "10.10.10.10"
+};
+ Ensure = "Present";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::360::13::xDnsServerSecondaryZone";
+ Name = "AdeRfgWtr.local";
+ ModuleName = "xDnsServer";
+ ModuleVersion = "1.11.0.0";
+
+DependsOn = {
+
+    "[xADDomain]target"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_xDnsServerSecondaryZone as $MSFT_xDnsServerSecondaryZone2ref
+{
+ResourceID = "[xDnsServerSecondaryZone]target.domain";
+ MasterServers = {
+    "10.10.10.11"
+};
+ Ensure = "Present";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::360::13::xDnsServerSecondaryZone";
+ Name = "target.domain";
+ ModuleName = "xDnsServer";
+ ModuleVersion = "1.11.0.0";
+
+DependsOn = {
+
+    "[xADDomain]target"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of MSFT_xDnsServerZoneTransfer as $MSFT_xDnsServerZoneTransfer1ref
+{
+ResourceID = "[xDnsServerZoneTransfer]TransferZones";
+ Type = "Specific";
+ SecondaryServer = {
+    "10.10.10.11",
+    "10.10.10.10"
+};
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::372::13::xDnsServerZoneTransfer";
+ Name = "target.domain";
+ ModuleName = "xDnsServer";
+ ModuleVersion = "1.11.0.0";
+
+DependsOn = {
+
+    "[xADDomain]target"};
+
+ ConfigurationName = "DomainController";
+
+};
+instance of AdeRfgWtr_DynamicPortRange as $AdeRfgWtr_DynamicPortRange1ref
+{
+ResourceID = "[AdeRfgWtr_DynamicPortRange]UDPStig";
+ StartPort = 49152;
+ ModuleVersion = "1.0.0.0";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::381::9::AdeRfgWtr_DynamicPortRange";
+ PortCount = 3000;
+ ModuleName = "AdeRfgWtr_Networking";
+ Protocol = "udp";
+
+ ConfigurationName = "DomainController";
+
+};
+instance of AdeRfgWtr_DynamicPortRange as $AdeRfgWtr_DynamicPortRange2ref
+{
+ResourceID = "[AdeRfgWtr_DynamicPortRange]TCPStigDatacenter";
+ StartPort = 49152;
+ ModuleVersion = "1.0.0.0";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::388::9::AdeRfgWtr_DynamicPortRange";
+ PortCount = 3000;
+ ModuleName = "AdeRfgWtr_Networking";
+ Protocol = "tcpdatacenter";
+
+ ConfigurationName = "DomainController";
+
+};
+instance of AdeRfgWtr_DynamicPortRange as $AdeRfgWtr_DynamicPortRange3ref
+{
+ResourceID = "[AdeRfgWtr_DynamicPortRange]TCPStigInternet";
+ StartPort = 49152;
+ ModuleVersion = "1.0.0.0";
+ SourceInfo = "C:\\DSC\\PartialConfigurations\\AdeRfgWtrDomainController.ps1::395::9::AdeRfgWtr_DynamicPortRange";
+ PortCount = 3000;
+ ModuleName = "AdeRfgWtr_Networking";
+ Protocol = "tcpinternet";
+
+ ConfigurationName = "DomainController";
+
+};
+instance of OMI_ConfigurationDocument
+
+
+                    {
+ Version="2.0.0";
+
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+
+                        Author="AdeRfgWtrAdmin";
+
+
+                        GenerationDate="02/25/2021 17:44:23";
+
+
+                        GenerationHost="TestServer";
+
+
+                        ContentType="PasswordEncrypted";
+
+
+                        Name="DomainController";
+
+
+                    };
